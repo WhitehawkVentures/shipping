@@ -1,11 +1,8 @@
-class Object
- def blank?
-   if respond_to? :empty?
-     empty?
-   elsif respond_to? :zero?
-     zero?
-   else
-     !self
-   end
- end
+unless Object.respond_to?(:blank?)
+  class Object
+    def blank?
+     # exactly like in rails
+     respond_to?(:empty?) ? empty? : !self
+    end
+  end
 end

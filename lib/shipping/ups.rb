@@ -401,7 +401,7 @@ module Shipping
       @sender_country ||= 'US'
       
       state = nil
-      if @state:
+      if @state
         state = STATES.has_value?(@state.downcase) ? STATES.index(@state.downcase) : @state
       end
       
@@ -667,6 +667,7 @@ module Shipping
           response[:encoded_image] = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/GraphicImage").text
           extension = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/LabelImageFormat/Code").text
           response[:image] = Tempfile.new(["shipping_label", '.' + extension.downcase])
+          response[:image].binmode
           response[:image].write Base64.decode64( response[:encoded_image] )
           response[:image].rewind
           
