@@ -596,7 +596,6 @@ module Shipping
                 b.ReferenceNumber {|b|
                   b.Code '02'
                   b.Value @reference_number
-                  b.BarCodeIndicator @reference_number
                 }
               end
               b.PackageServiceOptions { |b|
