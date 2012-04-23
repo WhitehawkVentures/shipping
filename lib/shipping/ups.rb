@@ -677,6 +677,7 @@ module Shipping
             extension = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/ControlLogReceipt/ImageFormat/Code").text
             response[:encoded_high_value_report] = high_value_report.text
             response[:high_value_report] = Tempfile.new(["high_value_report", '.' + extension.downcase])
+            response[:image].binmode
             response[:high_value_report].write Base64.decode64( response[:encoded_high_value_report] )
             response[:high_value_report].rewind
           end
