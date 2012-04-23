@@ -462,6 +462,7 @@ module Shipping
             :width => @measure_width,
             :height =>  @measure_height },
           :insurance => {:currency => @currency_code, :value => @insured_value },
+          :declared_value => @declared_value,
           :delivery_confirmation => delivery_confirmation
           }
       end
@@ -603,10 +604,14 @@ module Shipping
                   b.CurrencyCode package[:insurance][:currency] || 'US'
                   b.MonetaryValue package[:insurance][:value]
                 } if package[:insurance] && package[:insurance][:value]
+                b.DeclaredValue { |b|
+                  b.CurrencyCode package[:insurance][:currency]
+                  b.MonetaryValue package[:declared_value]
+                } if package[:declared_value]
                 b.DeliveryConfirmation { |b|
                   b.DCISType package[:delivery_confirmation]
                 } if package[:delivery_confirmation]
-              } if (package[:insurance] && package[:insurance][:value]) or package[:delivery_confirmation]
+              } if (package[:insurance] && package[:insurance][:value]) or package[:delivery_confirmation] or package[:declared_value]
             }
           end
         }
@@ -670,6 +675,8 @@ module Shipping
           response[:image].binmode
           response[:image].write Base64.decode64( response[:encoded_image] )
           response[:image].rewind
+          
+          response[:encoded_html] = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/HTMLImage").text
           
           # if this package has a high insured value
           high_value_report = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/ControlLogReceipt/GraphicImage")
