@@ -744,7 +744,7 @@ module Shipping
           }
         }
         # one shipment may have multiple packages
-        if tracking_numbers.length > 1
+        if tracking_numbers.length >= 1
           b.ExpandedVoidShipment { |b|
             b.ShipmentIdentificationNumber shipping_id
             for num in tracking_numbers
@@ -759,7 +759,7 @@ module Shipping
       # get VoidResponse
       get_response @ups_url + @ups_tool
       
-      if tracking_numbers.length > 1
+      if tracking_numbers.length >= 1
         status = true
         multiple_response = Hash.new
         REXML::XPath.each(@response, "//VoidShipmentResponse/PackageLevelResults") do |package_element|
