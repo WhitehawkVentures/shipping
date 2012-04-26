@@ -676,7 +676,10 @@ module Shipping
           response[:image].write Base64.decode64( response[:encoded_image] )
           response[:image].rewind
           
-          response[:encoded_html] = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/HTMLImage").text
+          html_image = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/HTMLImage")
+          if html_image
+            response[:encoded_html] = html_image.text
+          end
           
           # if this package has a high insured value
           high_value_report = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/ControlLogReceipt/GraphicImage")
