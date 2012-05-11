@@ -462,6 +462,7 @@ module Shipping
             :width => @measure_width,
             :height =>  @measure_height },
           :insurance => {:currency => @currency_code, :value => @insured_value },
+          :declared_value => @declared_value,
           :delivery_confirmation => delivery_confirmation
           }
       end
@@ -603,10 +604,14 @@ module Shipping
                   b.CurrencyCode package[:insurance][:currency] || 'US'
                   b.MonetaryValue package[:insurance][:value]
                 } if package[:insurance] && package[:insurance][:value]
+                b.DeclaredValue { |b|
+                  b.CurrencyCode package[:insurance][:currency]
+                  b.MonetaryValue package[:declared_value]
+                } if package[:declared_value]
                 b.DeliveryConfirmation { |b|
                   b.DCISType package[:delivery_confirmation]
                 } if package[:delivery_confirmation]
-              } if (package[:insurance] && package[:insurance][:value]) or package[:delivery_confirmation]
+              } if (package[:insurance] && package[:insurance][:value]) or package[:delivery_confirmation] or package[:declared_value]
             }
           end
         }
@@ -671,12 +676,18 @@ module Shipping
           response[:image].write Base64.decode64( response[:encoded_image] )
           response[:image].rewind
           
+          html_image = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/PackageResults/LabelImage/HTMLImage")
+          if html_image
+            response[:encoded_html] = html_image.text
+          end
+          
           # if this package has a high insured value
           high_value_report = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/ControlLogReceipt/GraphicImage")
           if high_value_report
             extension = REXML::XPath.first(@response, "//ShipmentAcceptResponse/ShipmentResults/ControlLogReceipt/ImageFormat/Code").text
             response[:encoded_high_value_report] = high_value_report.text
             response[:high_value_report] = Tempfile.new(["high_value_report", '.' + extension.downcase])
+            response[:high_value_report].binmode
             response[:high_value_report].write Base64.decode64( response[:encoded_high_value_report] )
             response[:high_value_report].rewind
           end
@@ -736,7 +747,7 @@ module Shipping
           }
         }
         # one shipment may have multiple packages
-        if tracking_numbers.length > 1
+        if tracking_numbers.length >= 1
           b.ExpandedVoidShipment { |b|
             b.ShipmentIdentificationNumber shipping_id
             for num in tracking_numbers
@@ -751,7 +762,7 @@ module Shipping
       # get VoidResponse
       get_response @ups_url + @ups_tool
       
-      if tracking_numbers.length > 1
+      if tracking_numbers.length >= 1
         status = true
         multiple_response = Hash.new
         REXML::XPath.each(@response, "//VoidShipmentResponse/PackageLevelResults") do |package_element|
