@@ -445,7 +445,7 @@ module Shipping
       @required += [:sender_phone, :sender_email, :sender_company, :sender_address, :sender_city, :sender_state, :sender_zip ]
 
       @ups_url ||= "https://wwwcie.ups.com/ups.app/xml"
-      @ups_tool = '/ShipConfirm'
+      @ups_tool = '/Ship'
       
       @country ||= 'US'
       @sender_country ||= 'US'
@@ -641,7 +641,7 @@ module Shipping
       end
 
       # make AcceptRequest and get AcceptResponse
-      @ups_tool = '/ShipAccept'
+      @ups_tool = '/Ship'
       
       b = request_access
       b.instruct!
