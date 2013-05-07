@@ -378,7 +378,7 @@ module Shipping
           # NOTE: This was set to TransportationCharges, but that leaves out service costs #MD
           shipmethods[index.to_i] = {
             :service => ServiceTypes.index(index),
-            :service_name => ServiceTypes.index(index).split("_").each{|word| word.capitalize!}.join(" "),
+            :service_name => ServiceTypes.index(index) ? ServiceTypes.index(index).split("_").each{|word| word.capitalize!}.join(" ") : index,
             :price => XPath.first(shipmethod, "TotalCharges/MonetaryValue").text.to_f,
             :currency => XPath.first(shipmethod, "TotalCharges/CurrencyCode").text,
             :billing_weight => XPath.first(shipmethod, "BillingWeight/Weight").text.to_f,
@@ -1017,7 +1017,8 @@ module Shipping
       "next_day_saver" => "13",
       "next_day_early" => "14",
       "worldwide_express_plus" => "54",
-      "2day_early" => "59"
+      "2day_early" => "59",
+      "worldwide_saver" => "65"
     }
     
     ServiceTimes = {
